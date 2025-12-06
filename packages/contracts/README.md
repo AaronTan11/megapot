@@ -58,7 +58,7 @@ Mock stablecoin simulating MegaETH's native USDm (developed with Ethena). For te
 ## Prerequisites
 
 - [Foundry](https://getfoundry.sh/) installed
-- Access to MegaETH RPC (`https://carrot.megaeth.com/rpc`)
+- Access to MegaETH RPC (`https://timothy.megaeth.com/rpc`)
 - Testnet ETH from [MegaETH Faucet](https://testnet.megaeth.com/)
 
 ## Installation
@@ -89,7 +89,7 @@ export INITIAL_MINT_AMOUNT=1000000000000  # 1M tokens (6 decimals)
 
 # Deploy to MegaETH testnet
 forge script script/DeployUSDm.s.sol \
-  --rpc-url https://carrot.megaeth.com/rpc \
+  --rpc-url https://timothy.megaeth.com/rpc \
   --broadcast
 ```
 
@@ -108,7 +108,7 @@ export NUMBER_PRICE=1000000            # Price per number in USDm (6 decimals = 
 
 # Deploy to MegaETH
 forge script script/DeployMegaPot.s.sol \
-  --rpc-url https://carrot.megaeth.com/rpc \
+  --rpc-url https://timothy.megaeth.com/rpc \
   --broadcast
 ```
 
@@ -119,7 +119,7 @@ forge script script/DeployMegaPot.s.sol \
 After deploying MegaPot, create a Gelato VRF task:
 
 1. Go to [Gelato App](https://app.gelato.network/)
-2. Connect your wallet to MegaETH Testnet (Chain ID: 6342)
+2. Connect your wallet to MegaETH Testnet (Chain ID: 6343)
 3. Create a new VRF task:
    - Select "VRF" service
    - Enter your MegaPot contract address
@@ -310,8 +310,8 @@ forge test --gas-report
 | Parameter | Value |
 |-----------|-------|
 | **Network Name** | MegaETH Testnet |
-| **Chain ID** | 6342 |
-| **RPC URL** | `https://carrot.megaeth.com/rpc` |
+| **Chain ID** | 6343 |
+| **RPC URL** | `https://timothy.megaeth.com/rpc` |
 | **Block Explorer** | `https://megaexplorer.xyz` |
 | **Block Gas Limit** | 2,000,000,000 (2B) |
 | **Faucet** | `https://testnet.megaeth.com/` |
