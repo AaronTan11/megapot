@@ -1,6 +1,7 @@
 import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { CyberLayout } from "@/components/CyberLayout";
 import {
 	HeadContent,
 	Outlet,
@@ -16,11 +17,12 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 	head: () => ({
 		meta: [
 			{
-				title: "megapot",
+				title: "MEGAPOT | Cyberpunk Lottery",
 			},
 			{
 				name: "description",
-				content: "megapot is a web application",
+				content:
+					"Enter the Grid. Win the Pot. The future of decentralized gambling on MegaETH.",
 			},
 		],
 		links: [
@@ -39,14 +41,19 @@ function RootComponent() {
 			<ThemeProvider
 				attribute="class"
 				defaultTheme="dark"
+				forcedTheme="dark" // Enforce dark mode for the cyber theme
 				disableTransitionOnChange
-				storageKey="vite-ui-theme"
-			>
-				<div className="grid grid-rows-[auto_1fr] h-svh">
-					<Header />
-					<Outlet />
-				</div>
-				<Toaster richColors />
+				storageKey="vite-ui-theme">
+				<CyberLayout>
+					<div className="grid grid-rows-[auto_1fr] min-h-screen">
+						<Header />
+						<Outlet />
+					</div>
+					<Toaster
+						richColors
+						theme="dark"
+					/>
+				</CyberLayout>
 			</ThemeProvider>
 			<TanStackRouterDevtools position="bottom-left" />
 		</>
