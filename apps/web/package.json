@@ -9,7 +9,8 @@
     "serve": "vite preview",
     "start": "vite",
     "check-types": "tsc --noEmit",
-    "generate-pwa-assets": "pwa-assets-generator"
+    "generate-pwa-assets": "pwa-assets-generator",
+    "test:rpc": "npx tsx scripts/test-megaeth-rpc.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",

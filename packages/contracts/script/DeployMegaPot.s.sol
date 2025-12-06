@@ -31,7 +31,7 @@ import {MegaPot} from "../src/MegaPot.sol";
  *
  * Post-Deployment Steps:
  *   1. Go to https://app.gelato.network/
- *   2. Connect wallet to MegaETH Testnet (Chain ID: 6343)
+ *   2. Connect wallet to MegaETH Testnet (Chain ID: 6342)
  *   3. Create new VRF task with MegaPot contract address
  *   4. Note the dedicated msg.sender (should match GELATO_OPERATOR)
  */
@@ -101,7 +101,7 @@ contract DeployMegaPot is Script {
         console2.log("");
         console2.log("NEXT STEPS:");
         console2.log("1. Go to https://app.gelato.network/");
-        console2.log("2. Connect wallet to MegaETH Testnet (Chain ID: 6343)");
+        console2.log("2. Connect wallet to MegaETH Testnet (Chain ID: 6342)");
         console2.log("3. Create a new VRF task:");
         console2.log("   - Select 'VRF' service");
         console2.log("   - Enter contract address:", address(megaPot));

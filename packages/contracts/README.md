@@ -1,14 +1,14 @@
 # MegaPot Smart Contracts
 
-Decentralized number guessing game built on MegaETH with Chainlink VRF v2.5 for provably fair randomness.
+Decentralized number guessing game built on MegaETH with Gelato VRF for provably fair randomness.
 
 ## Overview
 
-MegaPot is a lottery-style game where players purchase numbers from 0000-9999. At the end of each round, a verifiably random number is drawn using Chainlink VRF. Winners split the pot; if no winner, the entire pot rolls over to create progressively larger jackpots.
+MegaPot is a lottery-style game where players purchase numbers from 0000-9999. At the end of each round, a verifiably random number is drawn using Gelato VRF (powered by Drand). Winners split the pot; if no winner, the entire pot rolls over to create progressively larger jackpots.
 
 **Key Features:**
 - ERC-20 token (USDm) for ticket purchases and payouts
-- Chainlink VRF v2.5 for tamper-proof randomness
+- Gelato VRF for tamper-proof randomness (free on testnet!)
 - Configurable round duration, platform fee, and number price
 - Parameter changes only take effect on next round (never mid-round)
 - Full event emission for transparency and on-chain audit trail
@@ -18,10 +18,8 @@ MegaPot is a lottery-style game where players purchase numbers from 0000-9999. A
 ```
 packages/contracts/
 ├── src/
-│   ├── MegaPot.sol              # Main game contract
-│   ├── USDm.sol                 # Mock stablecoin (testnet only)
-│   └── interfaces/
-│       └── IVRFCoordinatorV2_5.sol  # VRF interface
+│   ├── MegaPot.sol              # Main game contract (inherits GelatoVRFConsumerBase)
+│   └── USDm.sol                 # Mock stablecoin (testnet only)
 ├── script/
 │   ├── DeployUSDm.s.sol         # USDm deployment script
 │   └── DeployMegaPot.s.sol      # MegaPot deployment script
@@ -29,7 +27,7 @@ packages/contracts/
     ├── MegaPot.t.sol            # MegaPot tests
     ├── USDm.t.sol               # USDm tests
     └── mocks/
-        └── MockVRFCoordinator.sol   # VRF mock for testing
+        └── MockVRFCoordinator.sol   # Gelato VRF mock for testing
 ```
 
 ### MegaPot.sol
@@ -37,7 +35,7 @@ packages/contracts/
 The main game contract that handles:
 - Round lifecycle management
 - Number purchases with ERC-20 tokens
-- VRF randomness requests and fulfillment
+- VRF randomness requests and fulfillment via Gelato
 - Winner determination and payout distribution
 - Platform fee collection
 - Admin configuration updates
@@ -60,8 +58,8 @@ Mock stablecoin simulating MegaETH's native USDm (developed with Ethena). For te
 ## Prerequisites
 
 - [Foundry](https://getfoundry.sh/) installed
-- Access to MegaETH RPC
-- Chainlink VRF v2.5 subscription (for mainnet/testnet)
+- Access to MegaETH RPC (`https://carrot.megaeth.com/rpc`)
+- Testnet ETH from [MegaETH Faucet](https://testnet.megaeth.com/)
 
 ## Installation
 
@@ -91,57 +89,51 @@ export INITIAL_MINT_AMOUNT=1000000000000  # 1M tokens (6 decimals)
 
 # Deploy to MegaETH testnet
 forge script script/DeployUSDm.s.sol \
-  --rpc-url $MEGAETH_RPC_URL \
+  --rpc-url https://carrot.megaeth.com/rpc \
   --broadcast
 ```
 
-### 2. Set Up Chainlink VRF Subscription
-
-Before deploying MegaPot, you need a Chainlink VRF v2.5 subscription:
-
-1. Go to [Chainlink VRF Subscription Manager](https://vrf.chain.link/)
-2. Connect your wallet
-3. Create a new subscription
-4. Fund the subscription with LINK tokens
-5. Note down:
-   - **Subscription ID**
-   - **VRF Coordinator address** (network-specific)
-   - **Key Hash** (gas lane, network-specific)
-
-For network-specific values, see [Chainlink VRF Supported Networks](https://docs.chain.link/vrf/v2-5/supported-networks).
-
-### 3. Deploy MegaPot
+### 2. Deploy MegaPot
 
 ```bash
 # Required environment variables
 export DEPLOYER_PRIVATE_KEY=0x...
-export VRF_COORDINATOR=0x...          # Chainlink VRF Coordinator address
-export VRF_KEY_HASH=0x...             # VRF key hash (gas lane)
-export VRF_SUBSCRIPTION_ID=123        # Your VRF subscription ID
-export USDM_ADDRESS=0x...             # USDm token address
+export GELATO_OPERATOR=0x...           # Gelato VRF operator (see step 3)
+export USDM_ADDRESS=0x...              # USDm token address from step 1
 
 # Optional environment variables (with defaults)
-export VRF_MIN_CONFIRMATIONS=3        # Min block confirmations (1-200)
-export VRF_CALLBACK_GAS_LIMIT=500000  # Callback gas limit (100k-2.5M)
-export ROUND_DURATION=300             # Round duration in seconds (5 min)
-export PLATFORM_FEE_BPS=500           # Platform fee in basis points (5%)
-export NUMBER_PRICE=1000000           # Price per number in USDm (6 decimals = $1)
+export ROUND_DURATION=300              # Round duration in seconds (5 min)
+export PLATFORM_FEE_BPS=500            # Platform fee in basis points (5%)
+export NUMBER_PRICE=1000000            # Price per number in USDm (6 decimals = $1)
 
 # Deploy to MegaETH
 forge script script/DeployMegaPot.s.sol \
-  --rpc-url $MEGAETH_RPC_URL \
+  --rpc-url https://carrot.megaeth.com/rpc \
   --broadcast
 ```
 
-### 4. Add MegaPot as VRF Consumer
+**Note:** For initial deployment, you can use a placeholder address for `GELATO_OPERATOR`. After creating the Gelato VRF task (step 3), call `setOperator()` to update it.
 
-After deployment, add MegaPot as a consumer to your VRF subscription:
+### 3. Set Up Gelato VRF
 
-1. Go to [Chainlink VRF Subscription Manager](https://vrf.chain.link/)
-2. Select your subscription
-3. Click "Add Consumer"
-4. Enter the MegaPot contract address
-5. Confirm the transaction
+After deploying MegaPot, create a Gelato VRF task:
+
+1. Go to [Gelato App](https://app.gelato.network/)
+2. Connect your wallet to MegaETH Testnet (Chain ID: 6342)
+3. Create a new VRF task:
+   - Select "VRF" service
+   - Enter your MegaPot contract address
+   - Gelato will auto-listen for `RequestedRandomness` events
+4. Note the **dedicated msg.sender** (operator address) from the dashboard
+5. Call `setOperator(operatorAddress)` on your MegaPot contract
+
+**Why Gelato VRF?**
+- Free on testnet (Gelato subsidizes transactions)
+- Supports MegaETH Timothy Testnet
+- Simple event-based integration (no subscription management)
+- Powered by Drand for verifiable randomness
+
+See [Gelato VRF Docs](https://docs.gelato.network/web3-services/vrf) for more details.
 
 ## Operator Runbook
 
@@ -161,14 +153,13 @@ MegaPot.RoundConfig memory newConfig = MegaPot.RoundConfig({
 megaPot.queueConfigUpdate(newConfig);
 ```
 
-### Updating VRF Parameters
+### Updating Gelato Operator
+
+If the Gelato operator address changes:
 
 ```solidity
-// Update VRF min confirmations and callback gas limit
-megaPot.setVRFParams(
-    5,        // minConfirmations (1-200)
-    750_000   // callbackGasLimit (100k-2.5M)
-);
+// Update the Gelato VRF operator address
+megaPot.setOperator(newOperatorAddress);
 ```
 
 ### Withdrawing Platform Fees
@@ -186,20 +177,21 @@ Key events to monitor:
 |-------|-------------|
 | `RoundStarted` | New round begins with timing and config snapshot |
 | `NumberPurchased` | Player buys a number |
-| `RoundRandomnessRequested` | VRF request submitted |
+| `RoundRandomnessRequested` | VRF request submitted to Gelato |
 | `RoundSettled` | Round ends with winner info and payout details |
 | `ConfigQueued` | Admin queued a config change |
 | `ConfigApplied` | Queued config applied to new round |
 | `FeesWithdrawn` | Platform fees withdrawn |
+| `OperatorUpdated` | Gelato operator address changed |
 
 ### VRF Troubleshooting
 
-If VRF requests are pending for too long (>24h is failure threshold):
+If VRF requests are pending for too long:
 
-1. Check subscription balance has enough LINK
-2. Verify MegaPot is added as consumer
-3. Check callback gas limit is sufficient
-4. Review [VRF Subscription Manager](https://vrf.chain.link/) for request status
+1. Check your Gelato VRF task is active at [app.gelato.network](https://app.gelato.network/)
+2. Verify MegaPot contract address matches the task
+3. Check Gelato has sufficient balance (free on testnet)
+4. Review task execution logs in Gelato dashboard
 
 ## Off-Chain Resolver Service
 
@@ -231,7 +223,7 @@ setInterval(monitorRounds, 5000);
 
 ### MegaETH Realtime API
 
-Use MegaETH's [Realtime API](https://docs.megaeth.com/realtime-api.html) for efficient event monitoring:
+Use MegaETH's [Realtime API](https://docs.megaeth.com/realtime-api) for efficient event monitoring:
 
 ```typescript
 // Subscribe to MegaPot events via WebSocket
@@ -241,6 +233,8 @@ ws.send(JSON.stringify({
   params: ["logs", { address: MEGAPOT_ADDRESS }]
 }));
 ```
+
+**Note:** Some WebSocket methods are currently rate-limited on MegaETH testnet. See [MegaETH FAQ](https://docs.megaeth.com/faq) for details.
 
 ## Frontend Integration
 
@@ -303,18 +297,30 @@ forge test --gas-report
 
 ## Security Considerations
 
-1. **VRF Security**: Only the VRF Coordinator can call `fulfillRandomWords`
+1. **VRF Security**: Only the Gelato operator can call `fulfillRandomness`
 2. **Reentrancy**: All payout functions protected by `nonReentrant`
 3. **Token Safety**: All transfers use OpenZeppelin's `SafeERC20`
 4. **Access Control**: Admin functions protected by `onlyOwner`
 5. **Config Safety**: Changes only apply to next round, never mid-round
 6. **Timing**: 10-second buffer before round end prevents last-second issues
+7. **Token Consistency**: Do not change `config.token` after deployment if fees have accrued in the current token
+
+## MegaETH Network Details
+
+| Parameter | Value |
+|-----------|-------|
+| **Network Name** | MegaETH Testnet |
+| **Chain ID** | 6342 |
+| **RPC URL** | `https://carrot.megaeth.com/rpc` |
+| **Block Explorer** | `https://megaexplorer.xyz` |
+| **Block Gas Limit** | 2,000,000,000 (2B) |
+| **Faucet** | `https://testnet.megaeth.com/` |
 
 ## Gas Optimization Notes
 
-- `callbackGasLimit` should be tuned based on expected max winners per round
-- For rounds with many winners of same number, callback may consume more gas
-- Consider UX to discourage excessive duplication of single numbers
+MegaETH has a 2 billion gas block limit (66x Ethereum), so gas concerns are minimal:
+- Winner payouts can handle thousands of winners in a single transaction
+- No artificial caps needed on holders per number
 
 ## License
 
